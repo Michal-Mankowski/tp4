@@ -46,7 +46,7 @@ int main(int argc, char* args[])
     */
     Eigen::VectorXf initial_state = Eigen::VectorXf::Zero(6);
     PlanarQuadrotor quadrotor(initial_state);
-    PlanarQuadrotorVisualizer quadrotor_visualizer(&quadrotor);
+    PlanarQuadrotorVisualizer quadrotor_visualizer(&quadrotor, SCREEN_WIDTH, SCREEN_HEIGHT);
     /**
      * Goal pose for the quadrotor
      * [x, y, theta, x_dot, y_dot, theta_dot]
