@@ -37,6 +37,7 @@ int main(int argc, char* args[])
     std::shared_ptr<SDL_Renderer> gRenderer = nullptr;
     const int SCREEN_WIDTH = 1280;
     const int SCREEN_HEIGHT = 720;
+    const int scale = 100;
 
     /**
      * TODO: Extend simulation
@@ -46,14 +47,14 @@ int main(int argc, char* args[])
     */
     Eigen::VectorXf initial_state = Eigen::VectorXf::Zero(6);
     PlanarQuadrotor quadrotor(initial_state);
-    PlanarQuadrotorVisualizer quadrotor_visualizer(&quadrotor, SCREEN_WIDTH, SCREEN_HEIGHT);
+    PlanarQuadrotorVisualizer quadrotor_visualizer(&quadrotor, SCREEN_WIDTH, SCREEN_HEIGHT, scale);
     /**
      * Goal pose for the quadrotor
      * [x, y, theta, x_dot, y_dot, theta_dot]
      * For implemented LQR controller, it has to be [x, y, 0, 0, 0, 0]
     */
     Eigen::VectorXf goal_state = Eigen::VectorXf::Zero(6);
-    goal_state << -1, 7, 0, 0, 0, 0;
+    goal_state << 0, 0 , 0, 0, 0, 0;
     quadrotor.SetGoal(goal_state);
     /* Timestep for the simulation */
     const float dt = 0.001;
@@ -90,6 +91,17 @@ int main(int argc, char* args[])
                 {
                     SDL_GetMouseState(&x, &y);
                     std::cout << "Mouse position: (" << x << ", " << y << ")" << std::endl;
+                }
+                else if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT)
+                {
+                    SDL_GetMouseState(&x, &y);
+                    std::cout << "Left button clicked!\n";
+                    Eigen::VectorXf goal_state = Eigen::VectorXf::Zero(6);
+                    std::pair<int, int> start = quadrotor_visualizer.GetOffset();
+                    int width_start = start.first;
+                    int height_start = start.second;
+                    goal_state << (x - width_start) / scale, (y - height_start) / scale, 0, 0, 0, 0;
+                    quadrotor.SetGoal(goal_state);
                 }
                 
             }
