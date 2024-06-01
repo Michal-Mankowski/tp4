@@ -13,10 +13,10 @@ private:
     PlanarQuadrotor *quadrotor_ptr;
     int x_offset;
     int y_offset;
-    int scale;
+    double scale;
 public:
     PlanarQuadrotorVisualizer(PlanarQuadrotor *quadrotor_ptr, const int& SCREEN_WIDTH, const int& SCREEN_HEIGHT,
-     const int& scale);
+     const double& scale);
     void render(std::shared_ptr<SDL_Renderer> &gRenderer);
-    std::pair<int, int> GetOffset();
+    std::pair<double, double> GetOffset();
 };

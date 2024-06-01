@@ -37,7 +37,7 @@ int main(int argc, char* args[])
     std::shared_ptr<SDL_Renderer> gRenderer = nullptr;
     const int SCREEN_WIDTH = 1280;
     const int SCREEN_HEIGHT = 720;
-    const int scale = 100;
+    const double scale = 10000000;
 
     /**
      * TODO: Extend simulation
@@ -47,6 +47,7 @@ int main(int argc, char* args[])
     */
     Eigen::VectorXf initial_state = Eigen::VectorXf::Zero(6);
     PlanarQuadrotor quadrotor(initial_state);
+    std::shared_ptr<PlanarQuadrotor> quadrotor_ptr = std::make_shared<PlanarQuadrotor>(quadrotor);
     PlanarQuadrotorVisualizer quadrotor_visualizer(&quadrotor, SCREEN_WIDTH, SCREEN_HEIGHT, scale);
     /**
      * Goal pose for the quadrotor
@@ -95,11 +96,11 @@ int main(int argc, char* args[])
                 else if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT)
                 {
                     SDL_GetMouseState(&x, &y);
-                    std::cout << "Left button clicked!\n";
+                    std::cout << "Left button clicked! " << quadrotor.GetState()[2] << "\n";
                     Eigen::VectorXf goal_state = Eigen::VectorXf::Zero(6);
-                    std::pair<int, int> start = quadrotor_visualizer.GetOffset();
-                    int width_start = start.first;
-                    int height_start = start.second;
+                    std::pair<double, double> start = quadrotor_visualizer.GetOffset();
+                    double width_start = start.first;
+                    double height_start = start.second;
                     goal_state << (x - width_start) / scale, (y - height_start) / scale, 0, 0, 0, 0;
                     quadrotor.SetGoal(goal_state);
                 }
