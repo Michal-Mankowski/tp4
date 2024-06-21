@@ -14,7 +14,7 @@ private:
     int xOffset;
     int yOffset;
     double scale;
-    bool prop_change = true;
+    int prop_change = 0;
 public:
     int target[2] = {-1};
     PlanarQuadrotorVisualizer(PlanarQuadrotor *quadrotor_ptr, const int& SCREEN_WIDTH, const int& SCREEN_HEIGHT,
