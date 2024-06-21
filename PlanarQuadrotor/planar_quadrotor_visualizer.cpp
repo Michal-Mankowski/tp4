@@ -1,7 +1,7 @@
 #include "planar_quadrotor_visualizer.h"
 
 PlanarQuadrotorVisualizer::PlanarQuadrotorVisualizer(PlanarQuadrotor *quadrotor_ptr, const int& SCREEN_WIDTH, const int& SCREEN_HEIGHT,
-const double& scale): quadrotor_ptr(quadrotor_ptr), x_offset(SCREEN_WIDTH / 2), y_offset(SCREEN_HEIGHT/2), scale(scale) {}
+const double& scale): quadrotor_ptr(quadrotor_ptr), xOffset(SCREEN_WIDTH / 2), yOffset(SCREEN_HEIGHT/2), scale(scale) {}
 /**
  * TODO: Improve visualizetion
  * 1. Transform coordinates from quadrotor frame to image frame so the circle is in the middle of the screen
@@ -9,24 +9,55 @@ const double& scale): quadrotor_ptr(quadrotor_ptr), x_offset(SCREEN_WIDTH / 2), 
  * 3. Animate proppelers (extra points)
  */
 void PlanarQuadrotorVisualizer::render(std::shared_ptr<SDL_Renderer> &gRenderer) {
+    constexpr float bodyWidth = 80.0f;
+    constexpr float bodyHeight = 20.0f;
+    constexpr float armHeight = 15.0f;
+    constexpr float armWidth = 3.0f;
+    constexpr float prop_r = 10.0f;
     Eigen::VectorXf state = this->quadrotor_ptr->GetState();
     float q_x, q_y, q_theta;
     /* x, y, theta coordinates */
-    q_x = state[0] * this->scale + this->x_offset;
-    q_y = state[1] * this->scale + this->y_offset;
+    q_x = state[0] * this->scale + this->xOffset;
+    q_y = state[1] * this->scale + this->yOffset;
     q_theta = state[2];
-    const float body_width = 80.0f;
-    const float body_height = 20.0f;
-    SDL_Texture* quadrotorTexture = SDL_CreateTexture(gRenderer.get(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, body_width, body_height);
+    SDL_Texture* quadrotorTexture = SDL_CreateTexture(gRenderer.get(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, bodyWidth, bodyHeight);
+    if (!quadrotorTexture) {
+        return;
+    }
     SDL_Rect body;
-    body.x = static_cast<int>(q_x - body_width / 2);
-    body.y = static_cast<int>(q_y - body_height / 2);
-    body.w = static_cast<int>(body_width);
-    body.h = static_cast<int>(body_height);
+    body.x = q_x - bodyWidth / 2;
+    body.y = q_y - bodyHeight / 2;
+    body.w = bodyWidth;
+    body.h = bodyHeight;
     SDL_Point rotationCenter = {static_cast<int>(q_x), static_cast<int>(q_y)};
     SDL_RenderCopyEx(gRenderer.get(), quadrotorTexture, nullptr, &body, q_theta * this->scale/100, &rotationCenter, SDL_FLIP_NONE);
+    SDL_Rect leftArm;
+    leftArm.x = q_x - bodyWidth / 2;
+    leftArm.y = -armHeight + q_y - bodyHeight / 2;
+    leftArm.w = armWidth;
+    leftArm.h = armHeight + bodyHeight/2;
+    SDL_Rect rightArm;
+    rightArm.x = -armWidth + q_x + bodyWidth / 2;
+    rightArm.y = -armHeight + q_y - bodyHeight / 2;
+    rightArm.w = armWidth;
+    rightArm.h = armHeight + bodyHeight/2;
+    SDL_RenderCopyEx(gRenderer.get(), quadrotorTexture, nullptr, &leftArm, q_theta * this->scale/100, &rotationCenter, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(gRenderer.get(), quadrotorTexture, nullptr, &rightArm, q_theta * this->scale/100, &rotationCenter, SDL_FLIP_NONE);
+    if (target[0] != -1 && target[1] != -1) {
+        SDL_SetRenderDrawColor(gRenderer.get(), 0xFF, 0x00, 0x00, 0xFF);
+        filledCircleColor(gRenderer.get(), this->target[0], this->target[1], 3, 0xFF0000FF);
+    }
+    if (prop_change) {
+        filledEllipseRGBA(gRenderer.get(), leftArm.x, leftArm.y, 1, prop_r, 0x00, 0x00, 0x00, 0xFF);
+        filledEllipseRGBA(gRenderer.get(), rightArm.x, rightArm.y, 1, prop_r, 0x00, 0x00, 0x00, 0xFF);
+    } else {
+        filledEllipseRGBA(gRenderer.get(), leftArm.x, leftArm.y, prop_r, 1, 0x00, 0x00, 0x00, 0xFF);
+        filledEllipseRGBA(gRenderer.get(), rightArm.x, rightArm.y, prop_r, 1, 0x00, 0x00, 0x00, 0xFF);
+    }
+    prop_change = !prop_change;
 }
 
+
 std::pair<double, double> PlanarQuadrotorVisualizer::GetOffset() {
-    return {this->x_offset, this->y_offset};
+    return {this->xOffset, this->yOffset};
 }

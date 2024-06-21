@@ -31,13 +31,17 @@ void control(PlanarQuadrotor &quadrotor, const Eigen::MatrixXf &K) {
     quadrotor.SetInput(input - K * quadrotor.GetControlState());
 }
 
+namespace {
+    constexpr int SCREEN_WIDTH = 1280;
+    constexpr int SCREEN_HEIGHT = 720;
+    constexpr double scale = 10000000;
+}
+
 int main(int argc, char* args[])
 {
     std::shared_ptr<SDL_Window> gWindow = nullptr;
     std::shared_ptr<SDL_Renderer> gRenderer = nullptr;
-    const int SCREEN_WIDTH = 1280;
-    const int SCREEN_HEIGHT = 720;
-    const double scale = 10000000;
+    
 
     /**
      * TODO: Extend simulation
@@ -96,12 +100,14 @@ int main(int argc, char* args[])
                 else if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT)
                 {
                     SDL_GetMouseState(&x, &y);
-                    std::cout << "Left button clicked! " << quadrotor.GetState()[2] << "\n";
+                    quadrotor_visualizer.target[0] = x;
+                    quadrotor_visualizer.target[1] = y;
+                    std::cout << "Left button clicked!\n";
                     Eigen::VectorXf goal_state = Eigen::VectorXf::Zero(6);
-                    std::pair<double, double> start = quadrotor_visualizer.GetOffset();
-                    double width_start = start.first;
-                    double height_start = start.second;
-                    goal_state << (x - width_start) / scale, (y - height_start) / scale, 0, 0, 0, 0;
+                    std::pair<double, double> offset = quadrotor_visualizer.GetOffset();
+                    double x_offset = offset.first;
+                    double y_offset = offset.second;
+                    goal_state << (x - x_offset) / scale, (y - y_offset) / scale, 0, 0, 0, 0;
                     quadrotor.SetGoal(goal_state);
                 }
                 
